@@ -16,6 +16,7 @@
 #include <semaphore.h>
 #include <sys/mman.h>
 #include <pthread.h>
+#include <omp.h>
 
 #define PORT 8080
 #define PORT 8080
@@ -50,28 +51,21 @@ int executeClient(){
     send(sock , hello , strlen(hello) , 0 );
     printf("Hello message sent\n");
     valread = read( sock , buffer, 1024);
-    printf("Leido\n");
-    printf("%s\n",buffer );
+    printf("Leido en proceso %d con socket %d\n",getpid(),sock);
+    printf("\n Se llego: %s\n",buffer );
     close(sock);
-    exit(0);
     return 0;
 }
 int main(int argc, char const *argv[])
 {
-    int ids[100];
-    for (int i = 0; i < 50; ++i) {
-        int id = fork();
-        if (id!=0){
-            if (id==-1){
-                printf("Failed creating process \n");
-            }
-            continue;
-        }
+    omp_set_num_threads(20);
+#pragma omp  parallel
+    {
+            executeClient();
 
-        printf("Numero %d\n",i);
-        executeClient();
     }
-    int wpid;
-    int status;
-    while ((wpid = wait(&status)) > 0);
+
+
+
+
 }

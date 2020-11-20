@@ -17,14 +17,18 @@ struct process{
     char * semaphoreName;
     bool available;
 };
+
+int * numProcesses;
 sem_t * semaphoreList;
+sem_t * semaphoreDelegation;
+struct sockaddr_in * address;
 //char *semaphoreListName ;
 static struct process * headList;
-void initList();
+void initList(int processes);
 void print_all_PID();
 void create_and_execute(int PID);
-void release_by_ID();
-void release_and_set_available(int socket);
+void release_by_ID(int PID);
+int release_and_set_available(int socket);
 int get_position_list_PID(int PID);
 void execute_process(struct process* process); // se llama despues de crear, para esperar a la señal de inicio
 int init_free_process(int socket);

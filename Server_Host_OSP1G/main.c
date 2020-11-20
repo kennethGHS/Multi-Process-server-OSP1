@@ -5,6 +5,14 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <unistd.h>
 #include <signal.h>
 #include <stdio.h>
 #include <sys/socket.h>
@@ -16,6 +24,100 @@
 #include <sys/mman.h>
 #include "proc_structures/proc_structure.h"
 #define PORT 8080
+#include "modes/delegation_mode.h"
+#include "modes/file_descriptor_messager.h"
+
+static
+void wyslij(int socket, int fd)  // send fd by socket
+{
+    struct msghdr msg = { 0 };
+    char buf[CMSG_SPACE(sizeof(fd))];
+    memset(buf, '\0', sizeof(buf));
+    struct iovec io = { .iov_base = "ABC", .iov_len = 3 };
+
+    msg.msg_iov = &io;
+    msg.msg_iovlen = 1;
+    msg.msg_control = buf;
+    msg.msg_controllen = sizeof(buf);
+
+    struct cmsghdr * cmsg = CMSG_FIRSTHDR(&msg);
+    cmsg->cmsg_level = SOL_SOCKET;
+    cmsg->cmsg_type = SCM_RIGHTS;
+    cmsg->cmsg_len = CMSG_LEN(sizeof(fd));
+
+    *((int *) CMSG_DATA(cmsg)) = fd;
+
+    msg.msg_controllen = CMSG_SPACE(sizeof(fd));
+
+    if (sendmsg(socket, &msg, 0) < 0)
+        printf("Failed to send message\n");
+}
+
+static
+int odbierz(int socket)  // receive fd from socket
+{
+    struct msghdr msg = {0};
+
+    char m_buffer[256];
+    struct iovec io = { .iov_base = m_buffer, .iov_len = sizeof(m_buffer) };
+    msg.msg_iov = &io;
+    msg.msg_iovlen = 1;
+
+    char c_buffer[256];
+    msg.msg_control = c_buffer;
+    msg.msg_controllen = sizeof(c_buffer);
+
+    if (recvmsg(socket, &msg, 0) < 0)
+        printf("Failed to receive message\n");
+
+    struct cmsghdr * cmsg = CMSG_FIRSTHDR(&msg);
+
+    unsigned char * data = CMSG_DATA(cmsg);
+
+    printf("About to extract fd\n");
+    int fd = *((int*) data);
+    printf("Extracted fd %d\n", fd);
+
+    return fd;
+}
+
+
+void releasingTest(){
+    initList(200);
+
+    for (int i = 0; i < 200; ++i) {
+        int id =fork();
+        if (id!=0){
+            if (id==-1){
+                printf("Error a la hora de creacion");
+            }
+            continue;
+        }
+        if (id==-1){
+            printf("Error a la hora de creacion");
+        }
+        printf("Creating process %d\n",i);
+        create_and_execute(getpid());
+        return ;
+    }
+    int wpid,status;
+    while (1==1){
+        int num, nitems;
+        printf("\nPor favor introducir Id del numero:\n");
+        nitems = scanf("%d", &num);
+        if (nitems == EOF) {
+            /* Handle EOF/Failure */
+        } else if (nitems == 0) {
+            /* Handle no match */
+        } else {
+            release_by_ID(num);
+            printf("Got %d\n", num);
+        }
+    }
+    while ((wpid = wait(&status)) > 0);
+    print_all_PID();
+//executeServer();
+}
 int executeServer(){
     int server_fd, new_socket, valread;
     struct sockaddr_in address;
@@ -77,26 +179,11 @@ int executeServer(){
 }
 int main(int argc, char const *argv[])
 {
-    initList();
 
-    for (int i = 0; i < 100; ++i) {
-        int id =fork();
-        if (id!=0){
-            if (id==-1){
-                printf("Error a la hora de creacion");
-            }
-            continue;
-        }
-        if (id==-1){
-            printf("Error a la hora de creacion");
-        }
-        printf("Creating process %d\n",i);
-        create_and_execute(getpid());
-        return 0;
-    }
-    int wpid,status;
-    while ((wpid = wait(&status)) > 0);
-    print_all_PID();
-//executeServer();
+//    executeServer();
+configure_comunication();
+    execute_delegation(50);
+//releasingTest();
+
 }
 

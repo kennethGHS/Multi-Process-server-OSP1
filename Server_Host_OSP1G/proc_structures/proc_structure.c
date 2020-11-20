@@ -12,16 +12,43 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <sys/socket.h>
+#include <stdlib.h>
+#include <netinet/in.h>
+#include <string.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <unistd.h>
+#include <signal.h>
+#include <stdio.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <semaphore.h>
+#include <sys/mman.h>
+#include <sys/socket.h>
+#include "../modes/file_descriptor_messager.h"
 /**
- * This method needs to be called to create all the processes, it inits the list of 100 processes in a list
+ * This method needs to be called to create all the processes, it inits the list of *numProcesses processes in a list
  * in shared memory, this processes can be accessed by the parend and the other processes
  * it also initiates the semaphore used for the administration of the list
  */
-void initList() {
-
-
+void initList(int processes) {
+    
     int protection = PROT_READ | PROT_WRITE;
     int visibility = MAP_SHARED | MAP_ANONYMOUS;
+    numProcesses = mmap(NULL, sizeof(int ), protection, visibility, -1, 0);
+    *numProcesses = processes;
     semaphoreList = mmap(NULL, sizeof(sem_t), protection, visibility, -1, 0);
     sem_init(semaphoreList, 1, 0);
     sem_post(semaphoreList);
@@ -32,15 +59,18 @@ void initList() {
     headList = mmap(NULL, sizeof(struct process), protection, visibility, -1, 0);
     headList->available = true;
     headList->semaphoreName = mmap(NULL, sizeof(struct process), protection, visibility, -1, 0);
-
+    headList->semaphore = mmap(NULL, sizeof(sem_t), protection, visibility, -1, 0);
+    sem_init(headList->semaphore, 1, 0);
     struct process *initial = headList;
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < *numProcesses; ++i) {
         initial->nextProcess = mmap(NULL, sizeof(struct process), protection, visibility, -1, 0);
         initial->nextProcess->available = true;
-        initial->semaphoreName = mmap(NULL, sizeof(struct process), protection, visibility, -1, 0);
+        initial->nextProcess->semaphore = mmap(NULL, sizeof(sem_t), protection, visibility, -1, 0);
+        initial->nextProcess->semaphoreName = mmap(NULL, sizeof(struct process), protection, visibility, -1, 0);
+        sem_init(initial->nextProcess->semaphore, 1, 0);
         initial = initial->nextProcess;
     }
-    //Meter una creacion de 100 elementos en este lugar
+    //Meter una creacion de *numProcesses elementos en este lugar
 //    printf("\nLOL\n");
 //    headList = NULL;
 //    sem_close(sem_id);
@@ -59,71 +89,93 @@ void create_and_execute(int procID) {
     sem_t *proc = semaphoreList;
     int procValue;
     sem_getvalue(proc, &procValue);
-    printf("El valor de smeaforo es %d \n", procValue);
     sem_wait(proc);
-    sem_getvalue(proc, &procValue);
-
-    printf("El valor de smeaforo es %d \n", procValue);
-
-    printf("Sleeping \n");
-//    sleep(2);
-
-
-//    printf("\nEntrando al wait \n");
-//    int cosa;
-//    sem_getvalue(proc,&cosa);
-//    printf("El valor es %d\n",cosa);
-//    printf("\nsaliendo al wait \n");
-    int protection = PROT_READ | PROT_WRITE;
-    int visibility = MAP_SHARED | MAP_ANONYMOUS;
     struct process *process = headList;
     while (!process->available) {
-//        printf("LOL funbque %d\n",process->idProcess);
-//print_all_PID();
+
         process = process->nextProcess;
 //        sleep(1);
     }
     process->idProcess = procID;
     sprintf(headList->semaphoreName, "%d", procID);
-    process->semaphore =mmap(NULL, sizeof(sem_t), protection, visibility, -1, 0);
-    sem_init(process->semaphore, 1, 0);
     process->inExecution = false;
     process->available = false;
-//    if (headList == NULL) {
-//        printf("LOL estoy aca 222\n");
-//
-//        headList = mmap(NULL, sizeof(struct process), protection, visibility, -1, 0);
-//        headList->idProcess = procID;
-//        headList->nextProcess = NULL;
-//        headList->semaphoreName = mmap(NULL, sizeof(struct process), protection, visibility, -1, 0);
-//        sprintf(headList->semaphoreName, "%d", procID);
-//        headList->semaphore = sem_open(headList->semaphoreName, O_CREAT, 0600, 0);
-//        headList->inExecution = false;
-//
-//    } else {
-//        printf("LOL estoy aca\n");
-//        struct process *pProcess = headList;
-//        while (pProcess->nextProcess != NULL) {
-//            pProcess = headList->nextProcess;
-//        }
-//        pProcess->nextProcess = mmap(NULL, sizeof(struct process), protection, visibility, -1, 0);
-//        pProcess->nextProcess->idProcess = procID;
-//        pProcess->nextProcess->nextProcess = NULL;
-//        pProcess->nextProcess->semaphoreName = mmap(NULL, sizeof(struct process), protection, visibility, -1, 0);
-//        sprintf(pProcess->nextProcess->semaphoreName, "%d", procID);
-//        pProcess->nextProcess->semaphore = sem_open(headList->semaphoreName, O_CREAT, 0600, 0);
-//        pProcess->nextProcess->inExecution = false;
-//    }
-//    printf("Prueba\n");
+
     sem_post(proc);
     execute_process(process);
 }
 
-void execute_process(struct process* process){
-    while (1==1){
-        sem_wait(process->semaphore);
-//        printf("Fui liberado, el proceso numero %d en la posicion de lista %d \n",getpid(),);
+void execute_process(struct process *process) {
 
+    while (1 == 1) {
+        char *hello = "Hello from server";
+        char buffer[1024] = {0};
+        long int valread;
+        sem_wait(process->semaphore);
+        process->socket = receive();
+        printf("Fui liberado, el proceso numero %d en la posicion de lista %d \n", getpid(),get_position_list_PID(getpid()));
+        //AQUI DEBE IR EL CODIGO DE SOCKETS
+        sleep(20);
+        valread = read(process->socket, buffer, 1024);
+//        perror("sad");
+//        printf("Se leyo %ld",valread);
+
+//        printf("%s\n", buffer);
+//        printf("Enviado al socket %d \n",process->socket);
+        send(process->socket, hello, strlen(hello), 0);
+        perror("sad");
+
+//        printf("Hello message sent\n");
+        sleep(1);
+        close(process->socket);
         process->inExecution = false;
+        printf("Ya termine \n");
     }
 }
+
+void release_by_ID(int PID) {
+    struct process *head = headList;
+    int i = 0;
+    while (head->idProcess != PID && i != *numProcesses) {
+        i++;
+        head = head->nextProcess;
+    }
+    if (i==*numProcesses){
+        return;
+    }
+    int procValue;
+    sem_getvalue(head->semaphore, &procValue);
+    sem_post(head->semaphore);
+    printf("Released process %d \n", PID);
+}
+
+int release_and_set_available(int socket) {
+    struct process *process = headList;
+    int i = 0;
+    while (process->inExecution && i != *numProcesses) {
+        i++;
+        process = process->nextProcess;
+    }
+    if(i==*numProcesses){
+        return -1;
+    }
+    process->socket = socket;
+    process->inExecution = true;
+    int procValue;
+    sem_getvalue(process->semaphore, &procValue);
+    printf("El valor de smeaforo es %d \n", procValue);
+    sem_post(process->semaphore);
+    return 0;
+}
+
+int get_position_list_PID(int PID) {
+    printf("\n PID = %d\n",PID);
+    struct process *head = headList;
+    int i = 0;
+    while (head->idProcess!=PID && i != *numProcesses) {
+        i++;
+        head = head->nextProcess;
+    }
+    return i;
+}
+
