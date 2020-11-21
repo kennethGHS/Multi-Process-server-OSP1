@@ -1,21 +1,20 @@
 //
-// Created by kenneth on 19/11/20.
+// Created by kenneth on 20/11/20.
 //
-#include "delegation_mode.h"
-#define PORT 8080
-#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <zconf.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <sys/wait.h>
-#include <time.h>
-#include <unistd.h>
-#include "file_descriptor_messager.h"
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <dirent.h>
+#include <netinet/in.h>
+#define PORT 8080
 #include "../image_admin/image_receiver.h"
 
-void execute_delegation(int processes){
-    initList(processes);
+void execute_continuous(){
+
     int server_fd, new_socket, valread;
     struct sockaddr_in address;
     int opt = 1;
@@ -50,7 +49,6 @@ void execute_delegation(int processes){
         perror("listen");
         exit(EXIT_FAILURE);
     }
-    create_processes(processes);
     while (1) {
         printf("Esperando \n");
         if ((new_socket = accept(server_fd, (struct sockaddr *) &address,
@@ -59,32 +57,11 @@ void execute_delegation(int processes){
             exit(EXIT_FAILURE);
         }
         printf("Detected connection\n");
-        release_and_set_available(new_socket);
-        send_file(new_socket);
-
-//        close(new_socket);
-
-
-
-//        int id = fork();
-//        if (id!=0){
-//            continue;
-//        }
-    }
-
-}
-void create_processes(int processes) {
-    for (int i = 0; i < processes; ++i) {
         int id = fork();
-        if (id != 0) {
-            if (id == -1) {
-                printf("Error a la hora de creacion");
-            }
-            continue;
+        if (id==0){
+        receive_picture(new_socket);
+        close(new_socket);
+        exit(0);
         }
-
-        printf("Creating process %d\n", i);
-        create_and_execute(getpid());
-        return;
     }
 }

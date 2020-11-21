@@ -24,9 +24,10 @@
 #include <sys/mman.h>
 #include "proc_structures/proc_structure.h"
 #define PORT 8080
-#include "modes/delegation_mode.h"
+#include "modes/serial_mode.h"
 #include "modes/file_descriptor_messager.h"
-
+#include "modes/continuous_mode.h"
+#include "image_admin/image_receiver.h"
 static
 void wyslij(int socket, int fd)  // send fd by socket
 {
@@ -179,10 +180,12 @@ int executeServer(){
 }
 int main(int argc, char const *argv[])
 {
-
+    configureImageReceiver();
 //    executeServer();
 configure_comunication();
-    execute_delegation(50);
+execute_serial();
+//execute_continuous();
+//    execute_delegation(100);
 //releasingTest();
 
 }

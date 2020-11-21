@@ -38,6 +38,8 @@
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include "../modes/file_descriptor_messager.h"
+#include "../image_admin/image_receiver.h"
+
 /**
  * This method needs to be called to create all the processes, it inits the list of *numProcesses processes in a list
  * in shared memory, this processes can be accessed by the parend and the other processes
@@ -71,7 +73,7 @@ void initList(int processes) {
         initial = initial->nextProcess;
     }
     //Meter una creacion de *numProcesses elementos en este lugar
-//    printf("\nLOL\n");
+//    //printf("\nLOL\n");
 //    headList = NULL;
 //    sem_close(sem_id);
 }
@@ -79,13 +81,13 @@ void initList(int processes) {
 void print_all_PID() {
     struct process *list = headList;
     while (list->available == false) {
-        printf(" El id es %d \n", list->idProcess);
+        //printf(" El id es %d \n", list->idProcess);
         list = list->nextProcess;
     }
 }
 
 void create_and_execute(int procID) {
-    printf("Creating process %d in forked\n", procID);
+    //printf("Creating process %d in forked\n", procID);
     sem_t *proc = semaphoreList;
     int procValue;
     sem_getvalue(proc, &procValue);
@@ -113,23 +115,27 @@ void execute_process(struct process *process) {
         long int valread;
         sem_wait(process->semaphore);
         process->socket = receive();
-        printf("Fui liberado, el proceso numero %d en la posicion de lista %d \n", getpid(),get_position_list_PID(getpid()));
-        //AQUI DEBE IR EL CODIGO DE SOCKETS
-        sleep(20);
-        valread = read(process->socket, buffer, 1024);
+        receive_picture(process->socket );
+//        sleep(5);
+
+//        //printf("Fui liberado, el proceso numero %d en la posicion de lista %d \n", getpid(),get_position_list_PID(getpid()));
+//        //AQUI DEBE IR EL CODIGO DE SOCKETS
+////        sleep(20);
+//        valread = read(process->socket, buffer, 1024);
+//        //printf("Se leyeron %ld bits",valread);
+////        perror("sad");
+////        //printf("Se leyo %ld",valread);
+//
+////        //printf("%s\n", buffer);
+////        //printf("Enviado al socket %d \n",process->socket);
+//        send(process->socket, hello, strlen(hello), 0);
 //        perror("sad");
-//        printf("Se leyo %ld",valread);
-
-//        printf("%s\n", buffer);
-//        printf("Enviado al socket %d \n",process->socket);
-        send(process->socket, hello, strlen(hello), 0);
-        perror("sad");
-
-//        printf("Hello message sent\n");
-        sleep(1);
+//
+////        //printf("Hello message sent\n");
+//        sleep(1);
         close(process->socket);
         process->inExecution = false;
-        printf("Ya termine \n");
+        //printf("Ya termine \n");
     }
 }
 
@@ -146,7 +152,7 @@ void release_by_ID(int PID) {
     int procValue;
     sem_getvalue(head->semaphore, &procValue);
     sem_post(head->semaphore);
-    printf("Released process %d \n", PID);
+    //printf("Released process %d \n", PID);
 }
 
 int release_and_set_available(int socket) {
@@ -161,15 +167,15 @@ int release_and_set_available(int socket) {
     }
     process->socket = socket;
     process->inExecution = true;
-    int procValue;
-    sem_getvalue(process->semaphore, &procValue);
-    printf("El valor de smeaforo es %d \n", procValue);
+//    int procValue;
+//    sem_getvalue(process->semaphore, &procValue);
+    //printf("El valor de proceso liberado es %d \n", process->idProcess);
     sem_post(process->semaphore);
     return 0;
 }
 
 int get_position_list_PID(int PID) {
-    printf("\n PID = %d\n",PID);
+    //printf("\n PID = %d\n",PID);
     struct process *head = headList;
     int i = 0;
     while (head->idProcess!=PID && i != *numProcesses) {

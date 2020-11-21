@@ -40,14 +40,15 @@ void send_file(int fileDescriptor){
     wyslij(sock, fd);
 
     close(fd);
-    nanosleep(&(struct timespec){ .tv_sec = 1, .tv_nsec = 500000000}, 0);
+    //SI DA PROBLEMAS REVISAR ESTO
+    nanosleep(&(struct timespec){ .tv_sec = 0, .tv_nsec = 5000000}, 0);
 //    printf("Parent exits\n");
 }
 int receive(){
 //    printf("Child at play\n");
 //    close(sv[0]);
     int sock = sv[1];
-    nanosleep(&(struct timespec){ .tv_sec = 0, .tv_nsec = 500000000}, 0);
+    nanosleep(&(struct timespec){ .tv_sec = 0, .tv_nsec = 5000000}, 0);
     int fd = odbierz(sock);
     return fd;
 //    printf("Read %d!\n", fd);
