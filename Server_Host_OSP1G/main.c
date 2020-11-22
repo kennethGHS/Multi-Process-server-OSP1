@@ -28,59 +28,61 @@
 #include "modes/file_descriptor_messager.h"
 #include "modes/continuous_mode.h"
 #include "image_admin/image_receiver.h"
-static
-void wyslij(int socket, int fd)  // send fd by socket
-{
-    struct msghdr msg = { 0 };
-    char buf[CMSG_SPACE(sizeof(fd))];
-    memset(buf, '\0', sizeof(buf));
-    struct iovec io = { .iov_base = "ABC", .iov_len = 3 };
-
-    msg.msg_iov = &io;
-    msg.msg_iovlen = 1;
-    msg.msg_control = buf;
-    msg.msg_controllen = sizeof(buf);
-
-    struct cmsghdr * cmsg = CMSG_FIRSTHDR(&msg);
-    cmsg->cmsg_level = SOL_SOCKET;
-    cmsg->cmsg_type = SCM_RIGHTS;
-    cmsg->cmsg_len = CMSG_LEN(sizeof(fd));
-
-    *((int *) CMSG_DATA(cmsg)) = fd;
-
-    msg.msg_controllen = CMSG_SPACE(sizeof(fd));
-
-    if (sendmsg(socket, &msg, 0) < 0)
-        printf("Failed to send message\n");
-}
-
-static
-int odbierz(int socket)  // receive fd from socket
-{
-    struct msghdr msg = {0};
-
-    char m_buffer[256];
-    struct iovec io = { .iov_base = m_buffer, .iov_len = sizeof(m_buffer) };
-    msg.msg_iov = &io;
-    msg.msg_iovlen = 1;
-
-    char c_buffer[256];
-    msg.msg_control = c_buffer;
-    msg.msg_controllen = sizeof(c_buffer);
-
-    if (recvmsg(socket, &msg, 0) < 0)
-        printf("Failed to receive message\n");
-
-    struct cmsghdr * cmsg = CMSG_FIRSTHDR(&msg);
-
-    unsigned char * data = CMSG_DATA(cmsg);
-
-    printf("About to extract fd\n");
-    int fd = *((int*) data);
-    printf("Extracted fd %d\n", fd);
-
-    return fd;
-}
+#include "modes/delegation_mode.h"
+//
+//static
+//void wyslij(int socket, int fd)  // send fd by socket
+//{
+//    struct msghdr msg = { 0 };
+//    char buf[CMSG_SPACE(sizeof(fd))];
+//    memset(buf, '\0', sizeof(buf));
+//    struct iovec io = { .iov_base = "ABC", .iov_len = 3 };
+//
+//    msg.msg_iov = &io;
+//    msg.msg_iovlen = 1;
+//    msg.msg_control = buf;
+//    msg.msg_controllen = sizeof(buf);
+//
+//    struct cmsghdr * cmsg = CMSG_FIRSTHDR(&msg);
+//    cmsg->cmsg_level = SOL_SOCKET;
+//    cmsg->cmsg_type = SCM_RIGHTS;
+//    cmsg->cmsg_len = CMSG_LEN(sizeof(fd));
+//
+//    *((int *) CMSG_DATA(cmsg)) = fd;
+//
+//    msg.msg_controllen = CMSG_SPACE(sizeof(fd));
+//
+//    if (sendmsg(socket, &msg, 0) < 0)
+//        printf("Failed to send message\n");
+//}
+//
+//static
+//int odbierz(int socket)  // receive fd from socket
+//{
+//    struct msghdr msg = {0};
+//
+//    char m_buffer[256];
+//    struct iovec io = { .iov_base = m_buffer, .iov_len = sizeof(m_buffer) };
+//    msg.msg_iov = &io;
+//    msg.msg_iovlen = 1;
+//
+//    char c_buffer[256];
+//    msg.msg_control = c_buffer;
+//    msg.msg_controllen = sizeof(c_buffer);
+//
+//    if (recvmsg(socket, &msg, 0) < 0)
+//        printf("Failed to receive message\n");
+//
+//    struct cmsghdr * cmsg = CMSG_FIRSTHDR(&msg);
+//
+//    unsigned char * data = CMSG_DATA(cmsg);
+//
+//    printf("About to extract fd\n");
+//    int fd = *((int*) data);
+//    printf("Extracted fd %d\n", fd);
+//
+//    return fd;
+//}
 
 
 void releasingTest(){
@@ -180,12 +182,11 @@ int executeServer(){
 }
 int main(int argc, char const *argv[])
 {
-    configureImageReceiver();
-//    executeServer();
-configure_comunication();
-execute_serial();
-//execute_continuous();
-//    execute_delegation(100);
+    configureImageReceiver(); // ESTO SIEMPRE SE EJECUTA
+    configure_comunication(); // ESTO SIEMPRE SE EJECUTA
+//execute_serial(); // Este es el serial
+//execute_continuous(); // Este es el que cuando llega una solicitud crea el proceso
+//execute_delegation(100); // Este crea una cantidad X de procesos y va delegando segun llegan las solicitudes
 //releasingTest();
 
 }

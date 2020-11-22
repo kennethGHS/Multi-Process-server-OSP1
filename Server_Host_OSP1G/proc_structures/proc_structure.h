@@ -31,7 +31,7 @@ void release_by_ID(int PID);
 int release_and_set_available(int socket);
 int get_position_list_PID(int PID);
 void execute_process(struct process* process); // se llama despues de crear, para esperar a la señal de inicio
-int init_free_process(int socket);
+int init_free_process();
 bool is_process_free();
 
 

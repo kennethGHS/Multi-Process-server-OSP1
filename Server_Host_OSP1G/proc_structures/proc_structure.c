@@ -62,14 +62,16 @@ void initList(int processes) {
     headList->available = true;
     headList->semaphoreName = mmap(NULL, sizeof(struct process), protection, visibility, -1, 0);
     headList->semaphore = mmap(NULL, sizeof(sem_t), protection, visibility, -1, 0);
+    headList->idProcess = -1;
     sem_init(headList->semaphore, 1, 0);
     struct process *initial = headList;
-    for (int i = 0; i < *numProcesses; ++i) {
+    for (int i = 0; i < *numProcesses +1; ++i) {
         initial->nextProcess = mmap(NULL, sizeof(struct process), protection, visibility, -1, 0);
         initial->nextProcess->available = true;
         initial->nextProcess->semaphore = mmap(NULL, sizeof(sem_t), protection, visibility, -1, 0);
         initial->nextProcess->semaphoreName = mmap(NULL, sizeof(struct process), protection, visibility, -1, 0);
         sem_init(initial->nextProcess->semaphore, 1, 0);
+        initial->idProcess = -1;
         initial = initial->nextProcess;
     }
     //Meter una creacion de *numProcesses elementos en este lugar
@@ -185,3 +187,13 @@ int get_position_list_PID(int PID) {
     return i;
 }
 
+int init_free_process(){
+    struct process * reference = headList;
+    while (reference->idProcess!=-1){
+        printf("Cerrando proceso %d \n",reference->idProcess);
+        kill(reference->idProcess,SIGKILL);
+        reference->inExecution = false;
+        reference->available = false;
+        reference = reference->nextProcess;
+    }
+}
