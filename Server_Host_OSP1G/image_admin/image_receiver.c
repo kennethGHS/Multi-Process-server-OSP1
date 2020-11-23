@@ -124,33 +124,80 @@ int receive_picture(int socket) {
     int lencopy = len;
     char *finalFilename = concact_dir(filename);
     FILE *fp = fopen(finalFilename, "wb");
+    perror("open");
+
     int sumatoria=0;
     long int writtenBytes;
     memset(buffer,0,sizeof(buffer));
+    int bytes_toRead = 1024;
     while (len!=0){
-        long int read_b;
-        read_b = read(socket, buffer, 1024);
-        len-=read_b;
-        writtenBytes = fwrite(buffer, 1, read_b, fp);
-        sumatoriaEscrito+=writtenBytes;
+            long int read_b;
+            read_b = read(socket, buffer, bytes_toRead);
+
+        perror("read");
+        printf("Read %ld \n",read_b);
         sumatoria+=read_b;
-        read_b-=writtenBytes;
-        while (read_b!=0){
-            read_b-=fwrite(buffer, 1, read_b, fp);
-        }
-        if (len<1024){
-            read_b = read(socket, buffer, len);
-            sumatoria+=len;
-            len-=read_b;
-            writtenBytes = fwrite(buffer, 1, len, fp);
-            sumatoriaEscrito+=writtenBytes;
-            if (sumatoriaEscrito<sumatoria){
-                read_b = read(socket, sumatoria-sumatoriaEscrito, len);
-                fwrite(buffer, 1, sumatoria-sumatoriaEscrito, fp);
+            if (read_b==0){
+                printf("Lol read fue 0\n");
             }
-            printf("len restante del proceso %s es %d",finalFilename,len);
-            break;
-        }
+            len-=read_b;
+            while (read_b!=0){
+                writtenBytes = fwrite(buffer, 1, read_b, fp);
+                perror("sad");
+                sumatoriaEscrito+=writtenBytes;
+                read_b-=writtenBytes;
+                printf("written %ld \n",writtenBytes);
+            }
+            if (len<1024){
+                bytes_toRead = len;
+            }
+//            if (len<=1024){
+//                printf("largo es %d",len);
+//                sumatoria+=read(socket, buffer, len);
+//                perror("read");
+//                sumatoriaEscrito+=fwrite(buffer, 1, len, fp);
+//                close(fp);
+//
+//                perror("sad");
+//
+//                break;
+//            }
+//        long int read_b;
+//        read_b = read(socket, buffer, 1024);
+//        len-=read_b;
+//        writtenBytes = fwrite(buffer, 1, read_b, fp);
+//        sumatoriaEscrito+=writtenBytes;
+//        sumatoria+=read_b;
+//        read_b-=writtenBytes;
+//        if (len<1024){
+//            read_b = read(socket, buffer, len);
+//            sumatoria+=len;
+//            len-=read_b;
+//            writtenBytes = fwrite(buffer, 1, len, fp);
+//            sumatoriaEscrito+=writtenBytes;
+////            if (sumatoriaEscrito<sumatoria){
+////                read_b = read(socket, sumatoria-sumatoriaEscrito, len);
+////                fwrite(buffer, 1, sumatoria-sumatoriaEscrito, fp);
+////            }
+//            printf("len restante del proceso %s es %d",finalFilename,len);
+//            break;
+//        }
+//        while (read_b!=0){
+//            read_b-=fwrite(buffer, 1, read_b, fp);
+//        }
+//        if (len<1024){
+//            read_b = read(socket, buffer, len);
+//            sumatoria+=len;
+//            len-=read_b;
+//            writtenBytes = fwrite(buffer, 1, len, fp);
+//            sumatoriaEscrito+=writtenBytes;
+////            if (sumatoriaEscrito<sumatoria){
+////                read_b = read(socket, sumatoria-sumatoriaEscrito, len);
+////                fwrite(buffer, 1, sumatoria-sumatoriaEscrito, fp);
+////            }
+//            printf("len restante del proceso %s es %d",finalFilename,len);
+//            break;
+//        }
 //        if (len<1024){
 //            read_b = read(socket, buffer, 1024);
 //            fwrite(buffer, len, 1, fp);
@@ -162,7 +209,7 @@ int receive_picture(int socket) {
     //printf("Written %d\n",sumatoria);
     //printf("Also the filename was %s",finalFilename);
     //printf("Tambien el numero de proceso fue %d",getpid());
-    close(fp);
+    fclose(fp);
 //    while (len != 0) {
 //        readBytes = read(socket, buffer, buffSize);
 //        len -= readBytes;
@@ -205,6 +252,9 @@ int receive_picture(int socket) {
         remove_image(finalFilename);
     }
     free(finalFilename);
+//    sleep(1);
+
+    send(socket, "Confirmado", sizeof("confirmado"), 0);
 
     close(socket);
 }

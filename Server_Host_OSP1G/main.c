@@ -186,7 +186,7 @@ int main(int argc, char const *argv[])
     configure_comunication(); // ESTO SIEMPRE SE EJECUTA
 //execute_serial(); // Este es el serial
 //execute_continuous(); // Este es el que cuando llega una solicitud crea el proceso
-//execute_delegation(100); // Este crea una cantidad X de procesos y va delegando segun llegan las solicitudes
+execute_delegation(100); // Este crea una cantidad X de procesos y va delegando segun llegan las solicitudes
 //releasingTest();
 
 }

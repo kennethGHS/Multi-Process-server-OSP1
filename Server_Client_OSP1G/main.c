@@ -74,22 +74,22 @@ int execute_server_client( char* filename){
     //ciclo de enviar la imagen
     valread = read( sock , buffer, 1024);
     memset(buffer,0,sizeof(buffer));
-
+    int bytes_toSend = 1024;
     while (sz!=0){
-        readBytes =fread(buffer,sizeof(char),1024,fp);
+        readBytes =fread(buffer,sizeof(char),bytes_toSend,fp);
         perror("sad");
         while (readBytes!=0){
-            sentBytes = send(sock,buffer,1024,0);
+            sentBytes = send(sock,buffer,bytes_toSend,0);
             perror("sad");
             readBytes-=sentBytes;
             sz-=sentBytes;
         }
-        if(sz<1024){
-            readBytes =fread(buffer,sizeof(char),sz,fp);
-            sentBytes = send(sock,buffer,1024,0);
-            break;
+        if(sz<bytes_toSend){
+            bytes_toSend = sz;
         }
     }
+    valread = read( sock , buffer, 1024);
+
     //espera a confirmacion de que se termino de procesar
 //    valread = read( sock , buffer, 1024);
     return 1 ;
@@ -162,18 +162,17 @@ int executeClient(){
 int main(int argc, char const *argv[])
 {
 
-    int num_threads = 50;
-    char * filename = "/home/kenneth/Pictures/ConsoleTaller4.png";
+    int num_threads = 5;
+    char * filename = "/home/kenneth/Pictures/PC.png";
     omp_set_num_threads(num_threads);
-//    execute_server_client(filename);
+//    execute_server_client(filename);3114
 #pragma omp  parallel
     {
-//        executeClient();
-//        int num_images = 20; // aqui hay que poner los que diga el usuario
-//        while(num_images!=0){
+        int num_images = 20; // aqui hay que poner los que diga el usuario
+        while(num_images!=0){
             execute_server_client(filename);
-//            num_images--;
-//        }
+            num_images--;
+        }
     }
 
 
