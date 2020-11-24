@@ -3,7 +3,9 @@
 //
 
 #include "sequential.h"
-
+/**
+ * Executes the serial mode
+ */
 void execute_sequential() {
 
     int server_fd, new_socket, valread;

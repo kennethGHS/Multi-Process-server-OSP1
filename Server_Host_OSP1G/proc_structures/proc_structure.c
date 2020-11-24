@@ -39,14 +39,19 @@ void initList(int processes) {
         initial = initial->nextProcess;
     }
 }
-
+/**
+ * Prints all processes ID
+ */
 void print_all_PID() {
     struct process *list = headList;
     while (list->available == false) {
         list = list->nextProcess;
     }
 }
-
+/**
+ * Adds a new process to the list and begins its execution
+ * @param procID
+ */
 void create_and_execute(int procID) {
     sem_t *proc = semaphoreList;
     int procValue;
@@ -65,7 +70,10 @@ void create_and_execute(int procID) {
     sem_post(proc);
     execute_process(process);
 }
-
+/**
+ * The process a process goes through for its execution
+ * @param process
+ */
 void execute_process(struct process *process) {
 
     while (1) {
@@ -79,7 +87,10 @@ void execute_process(struct process *process) {
         process->inExecution = false;
     }
 }
-
+/**
+ * Releases a process in the list using its id
+ * @param PID
+ */
 void release_by_ID(int PID) {
     struct process *head = headList;
     int i = 0;
@@ -94,7 +105,11 @@ void release_by_ID(int PID) {
     sem_getvalue(head->semaphore, &procValue);
     sem_post(head->semaphore);
 }
-
+/**
+ * releases a proces and sets it available
+ * @param socket
+ * @return
+ */
 int release_and_set_available(int socket) {
     struct process *process = headList;
     int i = 0;
@@ -110,7 +125,11 @@ int release_and_set_available(int socket) {
     sem_post(process->semaphore);
     return 0;
 }
-
+/**
+ * gets position of a process in the list using its id
+ * @param PID
+ * @return
+ */
 int get_position_list_PID(int PID) {
     struct process *head = headList;
     int i = 0;
@@ -120,7 +139,10 @@ int get_position_list_PID(int PID) {
     }
     return i;
 }
-
+/**
+ * Releases all processes in the list
+ * @return
+ */
 int init_free_process() {
     struct process *reference = headList;
     while (reference->idProcess != -1) {

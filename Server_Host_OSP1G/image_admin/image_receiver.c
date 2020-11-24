@@ -6,7 +6,10 @@
 
 //TODO make different for each server
 char images_path[1024];
-
+/**
+ * Configures the image receiver, creates a shared memory integer and semaphore
+ * @param path
+ */
 void configureImageReceiver(char *path) {
     strncpy(images_path, path, strlen(path));
     check_directories();
@@ -18,7 +21,10 @@ void configureImageReceiver(char *path) {
     numImages = mmap(NULL, sizeof(int), protection, visibility, -1, 0);
     *numImages = 0;
 }
-
+/**
+ * Increases the num of images that the server has processed
+ * @return
+ */
 int increase_num_images() {
     sem_wait(numImagesSemaphore);
     //printf("cantidad de num e iamgenes %d \n",*numImages);
@@ -88,7 +94,11 @@ char *get_file_name(char *file_directory) {
     }
     return filename;
 }
-
+/**
+ * Receives a socket and execute the process of receiving an image, deleting it or receiving it
+ * @param socket
+ * @return
+ */
 int receive_picture(int socket) {
     increase_num_images();
 
@@ -159,7 +169,11 @@ int receive_picture(int socket) {
     close(socket);
 }
 
-
+/**
+ * Removes an image using a command
+ * @param imageName
+ * @return
+ */
 int remove_image(char *imageName) {
     char fileToDelete[200];
     fileToDelete[0] = '\0';
@@ -168,7 +182,10 @@ int remove_image(char *imageName) {
     system(fileToDelete);
 
 }
-
+/**
+ * calculates the number of files in a directory anbd returns it
+ * @return
+ */
 int calcule_num_files() {
     int file_count = 0;
     DIR *dirp;
@@ -183,7 +200,10 @@ int calcule_num_files() {
     closedir(dirp);
     return file_count;
 }
-
+/**
+ * executes the filter on a defines image
+ * @param filename
+ */
 void execute_filter(char *filename) {
     printf("\rExecuting filter over %s\033[K", filename);
     fflush(stdout);

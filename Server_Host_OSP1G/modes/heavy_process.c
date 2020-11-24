@@ -3,7 +3,9 @@
 //
 
 #include "heavy_process.h"
-
+/**
+ * Executes the heavy process server
+ */
 void execute_heavy_process() {
 
     int server_fd, new_socket, valread;
