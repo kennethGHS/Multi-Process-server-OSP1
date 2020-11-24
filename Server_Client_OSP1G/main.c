@@ -103,13 +103,13 @@ int main(int argc, char const *argv[]) {
     double time_all = omp_get_wtime(); // el que se tarda por solicitud
     double times = 0;
     double times_per_thread = 0;
-#pragma omp  parallel
+#pragma omp parallel
     {
         double timeInit = omp_get_wtime();
-        while (num_images != 0) {
+        for(int i = 0; i < num_images; i++) {
+            printf("Thread: %d Cycle: %d\n", omp_get_thread_num(), i);
             double init_Time = omp_get_wtime();
             execute_server_client(ip_address, port, filename);
-            num_images--;
 #pragma omp critical
             times += (omp_get_wtime() - init_Time);
         }
