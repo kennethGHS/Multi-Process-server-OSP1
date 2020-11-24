@@ -59,7 +59,7 @@ void execute_delegation(int processes){
             exit(EXIT_FAILURE);
         }
         printf("Detected connection\n");
-        release_and_set_available(new_socket);
+        while (release_and_set_available(new_socket)==-1){}
         send_file(new_socket);
 
 //        close(new_socket);
