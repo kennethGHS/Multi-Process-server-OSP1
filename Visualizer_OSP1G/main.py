@@ -1,10 +1,10 @@
 import sys
 import matplotlib.pyplot as plt
 
-
 if __name__ == '__main__':
     if len(sys.argv) != 4:
-        print("Incorrect number of arguments. Usage is: python main.py <Serial file 1> <Continuous file 2> <Delegation file 3>")
+        print(
+            "Incorrect number of arguments. Usage is: python main.py <Serial file 1> <Continuous file 2> <Delegation file 3>")
         exit(1)
 
     request_times1 = []
@@ -22,7 +22,7 @@ if __name__ == '__main__':
         for line in file:
             request_times3.append(float(line))
 
-    # Accumulative and average request time
+    # Calculate metrics from times
     accumulative1 = []
     average1 = []
     request_per_second1 = []
@@ -59,8 +59,8 @@ if __name__ == '__main__':
         counter += 1
         request_per_second3.append(counter / total)
 
-
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(20, 5))
+    # Plot the data
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 4))
 
     ax1.plot(accumulative1, color='r', marker='^', label='Serial')
     ax1.plot(accumulative2, color='g', marker='o', label='Continuous')
@@ -84,4 +84,3 @@ if __name__ == '__main__':
     fig.legend(handles, labels, loc='upper center', ncol=len(labels))
 
     plt.show()
-
