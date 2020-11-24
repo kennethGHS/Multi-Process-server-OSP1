@@ -78,8 +78,8 @@ int execute_server_client(char *ip_address, int port, char *filename) {
 
 int main(int argc, char const *argv[]) {
 
-    if (argc != 6) {
-        printf("Not enough arguments. Usage is: client <ip address> <port> <filename> <n-threads> <n-cycles>\n");
+    if (argc != 7) {
+        printf("Not enough arguments. Usage is: client <ip address> <port> <filename> <n-threads> <n-cycles> <metrics filename>\n");
         return 1;
     }
 
@@ -88,9 +88,10 @@ int main(int argc, char const *argv[]) {
     char *filename = argv[3];
     int num_threads = atoi(argv[4]);
     int num_images = atoi(argv[5]);
+    char *output = argv[6];
 
     if (port == 0 || num_threads == 0 || num_images == 0) {
-        printf("Invalid arguments. Usage is: client <ip address> <port> <filename> <n-threads> <n-cycles>\n");
+        printf("Invalid arguments. Usage is: client <ip address> <port> <filename> <n-threads> <n-cycles> <metrics filename>\n");
         return 1;
     }
 
@@ -99,25 +100,30 @@ int main(int argc, char const *argv[]) {
         return 1;
     }
 
+    const int requests = num_images * num_threads;
+    double request_time[requests];
+    int request_counter = 0;
+
     omp_set_num_threads(num_threads);
-    double time_all = omp_get_wtime(); // el que se tarda por solicitud
-    double times = 0;
-    double times_per_thread = 0;
 #pragma omp parallel
     {
-        double timeInit = omp_get_wtime();
         for(int i = 0; i < num_images; i++) {
             printf("Thread: %d Cycle: %d\n", omp_get_thread_num(), i);
             double init_Time = omp_get_wtime();
             execute_server_client(ip_address, port, filename);
 #pragma omp critical
-            times += (omp_get_wtime() - init_Time);
+            {
+                request_time[request_counter] = (omp_get_wtime() - init_Time);
+                request_counter++;
+                printf("%d\n", request_counter);
+            }
         }
-#pragma omp critical
-        times_per_thread += (omp_get_wtime() - timeInit);
     }
 
-    double time_all2 = omp_get_wtime() - time_all;
-
-
+    // Write metrics to file
+    FILE *fp = fopen(output, "w");
+    for(int i = 0; i < requests; i++) {
+        fprintf(fp, "%.4f\n", request_time[i]);
+    }
+    fclose(fp);
 }
