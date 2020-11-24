@@ -79,7 +79,7 @@ int execute_server_client(char *ip_address, int port, char *filename) {
 int main(int argc, char const *argv[]) {
 
     if (argc != 7) {
-        printf("Not enough arguments. Usage is: client <ip address> <port> <filename> <n-threads> <n-cycles> <metrics filename>\n");
+        printf("Incorrect number of arguments. Usage is: client <ip address> <port> <filename> <n-threads> <n-cycles> <metrics filename>\n");
         return 1;
     }
 
