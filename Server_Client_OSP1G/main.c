@@ -162,8 +162,8 @@ int executeClient(){
 int main(int argc, char const *argv[])
 {
 
-    int num_threads = 50;
-    char * filename = "/home/marco/Pictures/test.png";
+    int num_threads = 2;
+    char * filename = "/home/kenneth/Pictures/Result.png";
     omp_set_num_threads(num_threads);
 //    execute_server_client(filename);3114
     double time_all = omp_get_wtime(); // el que se tarda por solicitud
@@ -172,7 +172,7 @@ int main(int argc, char const *argv[])
 #pragma omp  parallel
     {
         double timeInit = omp_get_wtime();
-        int num_images = 20; // aqui hay que poner los que diga el usuario
+        int num_images = 10; // aqui hay que poner los que diga el usuario
         while (num_images != 0) {
             double init_Time = omp_get_wtime();
             execute_server_client(filename);

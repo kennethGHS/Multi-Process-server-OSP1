@@ -247,8 +247,11 @@ int receive_picture(int socket) {
 //            return 0;
 //        }
 //    }
-//    execute_filter(finalFilename);
+printf("Prueba xd \n");
     execute_filter(finalFilename);
+    printf("Prueba xd \n");
+
+//    execute_filter(finalFilename);
     if (calcule_num_files() >= 102) {
         remove_image(finalFilename);
     }
@@ -286,8 +289,8 @@ int calcule_num_files() {
 }
 
 void execute_filter(char *filename) {
-    char cmd[50];
+    char cmd[200];
     strcpy(cmd, "python3 ../image_admin/sobel.py ");
-    system(strcat(cmd, filename));
+    int x = system(strcat(cmd, filename));
 
 }
