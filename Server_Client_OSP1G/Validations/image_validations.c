@@ -12,22 +12,20 @@
  * @param filename The direction to the file
  * @return 1 for a png, 2 for a jpeg or jpg and -1 if neither
  */
-int get_image_type(char* filename){
+int get_image_type(char *filename) {
 
-    int filenamesize= strlen(filename);
-    char fileextension[] = {filename[filenamesize-3],filename[filenamesize-2],filename[filenamesize-1],'\0' };
+    int filenamesize = strlen(filename);
+    char fileextension[] = {filename[filenamesize - 3], filename[filenamesize - 2], filename[filenamesize - 1], '\0'};
     char pngExtension[] = "PNGpng";
     char jpgExtension[] = "JPGjpgJPEGjpeg";
-    if(strstr(pngExtension, fileextension)!=NULL){
+    if (strstr(pngExtension, fileextension) != NULL) {
         return 1;
     }
-    if(strstr(jpgExtension, fileextension)!=NULL){
+    if (strstr(jpgExtension, fileextension) != NULL) {
         return 2;
-    } else{
-
+    } else {
         return -1;
     }
-    return -1;
 }
 
 int check_file_existence(char *filepath) {
