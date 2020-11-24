@@ -3,14 +3,6 @@
 //
 
 #include "image_receiver.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <zconf.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
-#include <dirent.h>
 
 void configureImageReceiver() {
     check_directories();
@@ -24,7 +16,6 @@ void configureImageReceiver() {
 }
 
 int increase_num_images() {
-    //printf("LOL semaforo\n");
     sem_wait(numImagesSemaphore);
     //printf("cantidad de num e iamgenes %d \n",*numImages);
     (*numImages)++;
@@ -151,105 +142,11 @@ int receive_picture(int socket) {
         if (len < 1024) {
             bytes_toRead = len;
         }
-//            if (len<=1024){
-//                printf("largo es %d",len);
-//                sumatoria+=read(socket, buffer, len);
-//                perror("read");
-//                sumatoriaEscrito+=fwrite(buffer, 1, len, fp);
-//                close(fp);
-//
-//                perror("sad");
-//
-//                break;
-//            }
-//        long int read_b;
-//        read_b = read(socket, buffer, 1024);
-//        len-=read_b;
-//        writtenBytes = fwrite(buffer, 1, read_b, fp);
-//        sumatoriaEscrito+=writtenBytes;
-//        sumatoria+=read_b;
-//        read_b-=writtenBytes;
-//        if (len<1024){
-//            read_b = read(socket, buffer, len);
-//            sumatoria+=len;
-//            len-=read_b;
-//            writtenBytes = fwrite(buffer, 1, len, fp);
-//            sumatoriaEscrito+=writtenBytes;
-////            if (sumatoriaEscrito<sumatoria){
-////                read_b = read(socket, sumatoria-sumatoriaEscrito, len);
-////                fwrite(buffer, 1, sumatoria-sumatoriaEscrito, fp);
-////            }
-//            printf("len restante del proceso %s es %d",finalFilename,len);
-//            break;
-//        }
-//        while (read_b!=0){
-//            read_b-=fwrite(buffer, 1, read_b, fp);
-//        }
-//        if (len<1024){
-//            read_b = read(socket, buffer, len);
-//            sumatoria+=len;
-//            len-=read_b;
-//            writtenBytes = fwrite(buffer, 1, len, fp);
-//            sumatoriaEscrito+=writtenBytes;
-////            if (sumatoriaEscrito<sumatoria){
-////                read_b = read(socket, sumatoria-sumatoriaEscrito, len);
-////                fwrite(buffer, 1, sumatoria-sumatoriaEscrito, fp);
-////            }
-//            printf("len restante del proceso %s es %d",finalFilename,len);
-//            break;
-//        }
-//        if (len<1024){
-//            read_b = read(socket, buffer, 1024);
-//            fwrite(buffer, len, 1, fp);
-//
-//            break;
-//        }
     }
     printf("Se sumaron %d deberia ser %d sum de escrito %d con nombre %s\n", sumatoria, lencopy, sumatoriaEscrito,
            finalFilename);
-    //printf("Written %d\n",sumatoria);
-    //printf("Also the filename was %s",finalFilename);
-    //printf("Tambien el numero de proceso fue %d",getpid());
     fclose(fp);
-//    while (len != 0) {
-//        readBytes = read(socket, buffer, buffSize);
-//        len -= readBytes;
-//        fwrite(buffer, sizeof(char), buffSize, fp);
-//        long int writtenBytes = 0;
-////        while (readBytes == 0 && len != 0) {
-////            readBytes = len;
-////            writtenBytes = fwrite(buffer, sizeof(char), buffSize, fp);
-////            len -= writtenBytes;
-////        }
-////        while (readBytes != 0) {
-////            writtenBytes = fwrite(buffer, sizeof(char), buffSize, fp);
-////            readBytes -= writtenBytes;
-////        }
-//        if (len < 1024) {
-//            readBytes = read(socket, buffer, buffSize);
-//            writtenBytes = fwrite(buffer, sizeof(char), buffSize, fp);
-//            break;
-//        }
-//    }
-//    close(fp);
-//    if (*numImages == 100) {
-//        remove_image(finalFilename);
-//        close(socket);
-//        free(finalFilename);
-//        return 0;
-//
-//    } else {
-//        int isGood = increase_num_images();
-//        if (isGood == -1) {
-//            remove_image(finalFilename);
-//            free(finalFilename);
-//            close(socket);
-//            return 0;
-//        }
-//    }
-printf("Prueba xd \n");
     execute_filter(finalFilename);
-    printf("Prueba xd \n");
 
 //    execute_filter(finalFilename);
     if (calcule_num_files() >= 102) {
