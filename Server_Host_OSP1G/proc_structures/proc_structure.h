@@ -6,7 +6,7 @@
 #define SERVER_HOST_OSP1G_PROC_STRUCTURE_H
 
 #include <semaphore.h>
-#include <z3.h>
+#include <stdbool.h>
 
 struct process{
     struct process * nextProcess;

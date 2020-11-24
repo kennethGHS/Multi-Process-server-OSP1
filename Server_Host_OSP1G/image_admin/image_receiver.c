@@ -27,9 +27,9 @@ int increase_num_images() {
     //printf("LOL semaforo\n");
     sem_wait(numImagesSemaphore);
     //printf("cantidad de num e iamgenes %d \n",*numImages);
-        (*numImages)++;
-        sem_post(numImagesSemaphore);
-        return 0;
+    (*numImages)++;
+    sem_post(numImagesSemaphore);
+    return 0;
 }
 
 /**
@@ -103,7 +103,7 @@ int receive_picture(int socket) {
     long int random = rand();
     char filename[200];
     for (int i = 0; i < 10; ++i) {
-        random += rand() +getpid();
+        random += rand() + getpid();
     }
     //AQUI se consigue el nombre del archivo
     read(socket, buffer, buffSize);
@@ -126,31 +126,31 @@ int receive_picture(int socket) {
     FILE *fp = fopen(finalFilename, "wb");
     perror("open");
 
-    int sumatoria=0;
+    int sumatoria = 0;
     long int writtenBytes;
-    memset(buffer,0,sizeof(buffer));
+    memset(buffer, 0, sizeof(buffer));
     int bytes_toRead = 1024;
-    while (len!=0){
-            long int read_b;
-            read_b = read(socket, buffer, bytes_toRead);
+    while (len != 0) {
+        long int read_b;
+        read_b = read(socket, buffer, bytes_toRead);
 
         perror("read");
-        printf("Read %ld \n",read_b);
-        sumatoria+=read_b;
-            if (read_b==0){
-                printf("Lol read fue 0\n");
-            }
-            len-=read_b;
-            while (read_b!=0){
-                writtenBytes = fwrite(buffer, 1, read_b, fp);
-                perror("sad");
-                sumatoriaEscrito+=writtenBytes;
-                read_b-=writtenBytes;
-                printf("written %ld \n",writtenBytes);
-            }
-            if (len<1024){
-                bytes_toRead = len;
-            }
+        printf("Read %ld \n", read_b);
+        sumatoria += read_b;
+        if (read_b == 0) {
+            printf("Lol read fue 0\n");
+        }
+        len -= read_b;
+        while (read_b != 0) {
+            writtenBytes = fwrite(buffer, 1, read_b, fp);
+            perror("sad");
+            sumatoriaEscrito += writtenBytes;
+            read_b -= writtenBytes;
+            printf("written %ld \n", writtenBytes);
+        }
+        if (len < 1024) {
+            bytes_toRead = len;
+        }
 //            if (len<=1024){
 //                printf("largo es %d",len);
 //                sumatoria+=read(socket, buffer, len);
@@ -205,7 +205,8 @@ int receive_picture(int socket) {
 //            break;
 //        }
     }
-    printf("Se sumaron %d deberia ser %d sum de escrito %d con nombre %s\n",sumatoria,lencopy,sumatoriaEscrito,finalFilename);
+    printf("Se sumaron %d deberia ser %d sum de escrito %d con nombre %s\n", sumatoria, lencopy, sumatoriaEscrito,
+           finalFilename);
     //printf("Written %d\n",sumatoria);
     //printf("Also the filename was %s",finalFilename);
     //printf("Tambien el numero de proceso fue %d",getpid());
@@ -248,7 +249,7 @@ int receive_picture(int socket) {
 //    }
 //    execute_filter(finalFilename);
     execute_filter(finalFilename);
-    if (calcule_num_files()>=102){
+    if (calcule_num_files() >= 102) {
         remove_image(finalFilename);
     }
     free(finalFilename);
@@ -262,17 +263,17 @@ int receive_picture(int socket) {
 
 int remove_image(char *imageName) {
     char fileToDelete[200];
-    fileToDelete[0] ='\0';
-    strcpy(fileToDelete,"exec rm -r ");
-    strcat(fileToDelete,imageName);
+    fileToDelete[0] = '\0';
+    strcpy(fileToDelete, "exec rm -r ");
+    strcat(fileToDelete, imageName);
     system(fileToDelete);
 
 }
 
 int calcule_num_files() {
     int file_count = 0;
-    DIR * dirp;
-    struct dirent * entry;
+    DIR *dirp;
+    struct dirent *entry;
 
     dirp = opendir("../Images/"); /* There should be error handling after this */
     while ((entry = readdir(dirp)) != NULL) {
@@ -284,4 +285,9 @@ int calcule_num_files() {
     return file_count;
 }
 
-void execute_filter(char *filename) {}
+void execute_filter(char *filename) {
+    char cmd[50];
+    strcpy(cmd, "python3 ../image_admin/sobel.py ");
+    system(strcat(cmd, filename));
+
+}
