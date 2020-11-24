@@ -124,7 +124,7 @@ int get_position_list_PID(int PID) {
 int init_free_process() {
     struct process *reference = headList;
     while (reference->idProcess != -1) {
-        printf("Cerrando proceso %d \n", reference->idProcess);
+        printf("Closing process with id %d \n", reference->idProcess);
         kill(reference->idProcess, SIGKILL);
         reference->inExecution = false;
         reference->available = false;

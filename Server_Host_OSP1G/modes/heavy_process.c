@@ -37,18 +37,43 @@ void execute_heavy_process() {
         exit(EXIT_FAILURE);
     }
     while (1) {
-        printf("Esperando \n");
-        if ((new_socket = accept(server_fd, (struct sockaddr *) &address,
-                                 (socklen_t *) &addrlen)) < 0) {
+        printf("\rAwaiting connection\033[K");
+        fflush(stdout);
+
+        fd_set set;
+        struct timeval timeout;
+        int rv;
+        FD_ZERO(&set); /* clear the set */
+        FD_SET(server_fd, &set); /* add our file descriptor to the set */
+
+        timeout.tv_sec = 15;
+        timeout.tv_usec = 0;
+
+        rv = select(server_fd + 1, &set, NULL, NULL, &timeout);
+        if (rv == -1) {
+            perror("select"); /* an error accured */
+        } else if (rv == 0) {
+            printf("\rTimeout occurred (15 seconds)\033[K\n"); /* a timeout occured */
+            break;
+        } else if ((new_socket = accept(server_fd, (struct sockaddr *) &address,
+                                        (socklen_t * ) & addrlen)) < 0) {
             perror("accept");
             exit(EXIT_FAILURE);
         }
-        printf("Detected connection\n");
+        printf("\rConnection detected\033[K");
+        fflush(stdout);
+
         int id = fork();
         if (id == 0) {
             receive_picture(new_socket);
             close(new_socket);
             exit(0);
+        }
+        char buf[20];
+        fcntl(0, F_SETFL, fcntl(0, F_GETFL) | O_NONBLOCK);
+        if (read(0, buf, 4) > 0) {
+            printf("\n");
+            break;
         }
     }
 }
@@ -63,6 +88,7 @@ int main(int argc, char const *argv[]) {
 
     configureImageReceiver("./h_process_images/"); // ESTO SIEMPRE SE EJECUTA
     configure_comunication(); // ESTO SIEMPRE SE EJECUTA
+    printf("Heavy process server started, press ENTER to stop execution or wait for timeout\n");
     execute_heavy_process();
 
 }

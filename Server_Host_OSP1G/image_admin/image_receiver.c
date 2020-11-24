@@ -91,7 +91,7 @@ char *get_file_name(char *file_directory) {
 
 int receive_picture(int socket) {
     increase_num_images();
-    //printf("Receiven picture\n");
+
     int buffSize = 1024;
     char buffer[buffSize];
     long int readBytes = 0;
@@ -104,13 +104,13 @@ int receive_picture(int socket) {
     }
     //AQUI se consigue el nombre del archivo
     read(socket, buffer, buffSize);
-    //printf("\n He recibido \n");
+
     char *filenameReceived = get_file_name(buffer);
     sprintf(filename, "%ld", random);
     //hay que dealocar el nombre de la imagen
     strcat(filename, filenameReceived);
     free(filenameReceived);
-    //AQUI deberia revisar los directoriso
+
     send(socket, "Confirmado", sizeof("confirmado"), 0);
     int sumatoriaEscrito = 0;
     read(socket, buffer, buffSize);
@@ -121,7 +121,6 @@ int receive_picture(int socket) {
     int lencopy = len;
     char *finalFilename = concact_dir(filename);
     FILE *fp = fopen(finalFilename, "wb");
-    perror("open");
 
     int sumatoria = 0;
     long int writtenBytes;
@@ -131,35 +130,29 @@ int receive_picture(int socket) {
         long int read_b;
         read_b = read(socket, buffer, bytes_toRead);
 
-        perror("read");
-        printf("Read %ld \n", read_b);
         sumatoria += read_b;
         if (read_b == 0) {
-            printf("Lol read fue 0\n");
+            printf("Read fue 0\n");
         }
         len -= read_b;
         while (read_b != 0) {
             writtenBytes = fwrite(buffer, 1, read_b, fp);
-            perror("sad");
             sumatoriaEscrito += writtenBytes;
             read_b -= writtenBytes;
-            printf("written %ld \n", writtenBytes);
         }
         if (len < 1024) {
             bytes_toRead = len;
         }
     }
-    printf("Se sumaron %d deberia ser %d sum de escrito %d con nombre %s\n", sumatoria, lencopy, sumatoriaEscrito,
-           finalFilename);
+    printf("\rFile received with name %s\033[K", finalFilename);
+    fflush(stdout);
     fclose(fp);
     execute_filter(finalFilename);
 
-//    execute_filter(finalFilename);
     if (calcule_num_files() >= 102) {
         remove_image(finalFilename);
     }
     free(finalFilename);
-//    sleep(1);
 
     send(socket, "Confirmado", sizeof("confirmado"), 0);
 
@@ -192,8 +185,12 @@ int calcule_num_files() {
 }
 
 void execute_filter(char *filename) {
+    printf("\rExecuting filter over %s\033[K", filename);
+    fflush(stdout);
     char cmd[200];
     strcpy(cmd, "python3 ./image_admin/sobel.py ");
     int x = system(strcat(cmd, filename));
+    printf("\rFilter Applied to %s\033[K", filename);
+    fflush(stdout);
 
 }

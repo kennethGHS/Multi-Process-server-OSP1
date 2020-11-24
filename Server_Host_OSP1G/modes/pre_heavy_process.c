@@ -36,19 +36,44 @@ void execute_pre_heavy_process(int processes) {
         exit(EXIT_FAILURE);
     }
     create_processes(processes);
+    sleep(1);
     while (1) {
-        printf("Esperando \n");
-        if ((new_socket = accept(server_fd, (struct sockaddr *) &address,
-                                 (socklen_t *) &addrlen)) < 0) {
+        printf("\rAwaiting connection\033[K");
+        fflush(stdout);
+
+        fd_set set;
+        struct timeval timeout;
+        int rv;
+        FD_ZERO(&set); /* clear the set */
+        FD_SET(server_fd, &set); /* add our file descriptor to the set */
+
+        timeout.tv_sec = 15;
+        timeout.tv_usec = 0;
+
+        rv = select(server_fd + 1, &set, NULL, NULL, &timeout);
+        if (rv == -1) {
+            perror("select"); /* an error accured */
+        } else if (rv == 0) {
+            printf("\rTimeout occurred (15 seconds)\033[K\n"); /* a timeout occured */
+            break;
+        } else if ((new_socket = accept(server_fd, (struct sockaddr *) &address,
+                                        (socklen_t * ) & addrlen)) < 0) {
             perror("accept");
             exit(EXIT_FAILURE);
         }
-        printf("Detected connection\n");
-        while (release_and_set_available(new_socket) == -1) {
-
-        }
+        printf("\rConnection detected\033[K");
+        fflush(stdout);
+        while (release_and_set_available(new_socket) == -1) {}
         send_file(new_socket);
+        char buf[20];
+
+        fcntl(0, F_SETFL, fcntl(0, F_GETFL) | O_NONBLOCK);
+        if (read(0, buf, 4) > 0) {
+            printf("\n");
+            break;
+        }
     }
+    init_free_process();
 
 }
 
@@ -57,7 +82,7 @@ void create_processes(int processes) {
         int id = fork();
         if (id != 0) {
             if (id == -1) {
-                printf("Error a la hora de creacion");
+                printf("Process creation error");
             }
             continue;
         }
@@ -78,6 +103,7 @@ int main(int argc, char const *argv[]) {
 
     configureImageReceiver("./pre_h_process_images/"); // ESTO SIEMPRE SE EJECUTA
     configure_comunication(); // ESTO SIEMPRE SE EJECUTA
+    printf("Pre-heavy process server started, press ENTER to stop execution or wait for timeout\n");
     execute_pre_heavy_process(atoi(argv[2]));
 
 }

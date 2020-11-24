@@ -7,7 +7,6 @@
 void send_file(int fileDescriptor) {
 
     int sock = sv[0];
-
     int fd = fileDescriptor;
     wyslij(sock, fd);
 
@@ -72,12 +71,10 @@ int odbierz(int socket)  // receive fd from socket
         printf("Failed to receive message\n");
 
     struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
-
     unsigned char *data = CMSG_DATA(cmsg);
 
-    printf("About to extract fd\n");
     int fd = *((int *) data);
-    printf("Extracted fd %d\n", fd);
+    printf("\rExtracted fd %d\033[K", fd);
 
     return fd;
 }
