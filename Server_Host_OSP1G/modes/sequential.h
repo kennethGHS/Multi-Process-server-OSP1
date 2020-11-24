@@ -2,19 +2,20 @@
 // Created by kenneth on 20/11/20.
 //
 
-#ifndef SERVER_HOST_OSP1G_SERIAL_MODE_H
-#define SERVER_HOST_OSP1G_SERIAL_MODE_H
+#ifndef SERVER_HOST_OSP1G_SEQUENTIAL_H
+#define SERVER_HOST_OSP1G_SEQUENTIAL_H
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <zconf.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include "file_descriptor_messager.h"
 
 #include "../image_admin/image_receiver.h"
 
-#define PORT 8080
+int PORT;
 
-void execute_serial();
+void execute_sequential();
 
-#endif //SERVER_HOST_OSP1G_SERIAL_MODE_H
+#endif //SERVER_HOST_OSP1G_SEQUENTIAL_H

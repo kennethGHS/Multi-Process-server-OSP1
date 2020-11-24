@@ -2,9 +2,9 @@
 // Created by kenneth on 20/11/20.
 //
 
-#include "continuous_mode.h"
+#include "sequential.h"
 
-void execute_continuous() {
+void execute_sequential() {
 
     int server_fd, new_socket, valread;
     struct sockaddr_in address;
@@ -44,11 +44,19 @@ void execute_continuous() {
             exit(EXIT_FAILURE);
         }
         printf("Detected connection\n");
-        int id = fork();
-        if (id == 0) {
-            receive_picture(new_socket);
-            close(new_socket);
-            exit(0);
-        }
+        receive_picture(new_socket);
     }
+}
+
+int main(int argc, char const *argv[]) {
+
+    if (argc != 2) {
+        printf("Not enough arguments. Usage is: sequential <port>\n");
+        return 1;
+    }
+    PORT = atoi(argv[1]);
+
+    configureImageReceiver("./sequential_images/"); // ESTO SIEMPRE SE EJECUTA
+    configure_comunication(); // ESTO SIEMPRE SE EJECUTA
+    execute_sequential();
 }

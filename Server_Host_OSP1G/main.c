@@ -8,9 +8,9 @@
 #include "proc_structures/proc_structure.h"
 #include "modes/file_descriptor_messager.h"
 #include "image_admin/image_receiver.h"
-#include "modes/delegation_mode.h"
-#include "modes/continuous_mode.h"
-#include "modes/serial_mode.h"
+#include "modes/pre_heavy_process.h"
+#include "modes/heavy_process.h"
+#include "modes/sequential.h"
 
 #define PORT 8080
 
@@ -110,10 +110,5 @@ int executeServer() {
 int main(int argc, char const *argv[]) {
     configureImageReceiver(); // ESTO SIEMPRE SE EJECUTA
     configure_comunication(); // ESTO SIEMPRE SE EJECUTA
-//execute_serial(); // Este es el serial
-//execute_continuous(); // Este es el que cuando llega una solicitud crea el proceso
-    execute_delegation(10); // Este crea una cantidad X de procesos y va delegando segun llegan las solicitudes
-//releasingTest();
-
 }
 

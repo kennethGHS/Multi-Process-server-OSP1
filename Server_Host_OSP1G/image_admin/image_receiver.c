@@ -4,9 +4,13 @@
 
 #include "image_receiver.h"
 
-void configureImageReceiver() {
+//TODO make different for each server
+char images_path[1024];
+
+void configureImageReceiver(char *path) {
+    strncpy(images_path, path, strlen(path));
     check_directories();
-    system("exec rm -r ../Images/*");
+
     int protection = PROT_READ | PROT_WRITE;
     int visibility = MAP_SHARED | MAP_ANONYMOUS;
     numImagesSemaphore = mmap(NULL, sizeof(sem_t), protection, visibility, -1, 0);
@@ -28,9 +32,11 @@ int increase_num_images() {
  */
 void check_directories() {
     struct stat st = {0};
-    if (stat("../Images/", &st) == -1) {
-        mkdir("../Images/", 0700);
+    if (stat(images_path, &st) == -1) {
+        mkdir(images_path, 0700);
     }
+    char cmd[300] = "exec rm -r ";
+    system(strcat(strcat(cmd, images_path), "*"));
 }
 
 /**
@@ -40,9 +46,9 @@ void check_directories() {
  * @return the directory with the filename
  */
 char *concact_dir(char *filename) {
-    char *result = malloc(strlen(filename) + strlen("../Images/") + 1); // +1 for the null-terminator
+    char *result = malloc(strlen(filename) + strlen(images_path) + 1); // +1 for the null-terminator
     // in real code you would check for errors in malloc here
-    strcpy(result, "../Images/");
+    strcpy(result, images_path);
     strcat(result, filename);
     return result;
 }
@@ -175,7 +181,7 @@ int calcule_num_files() {
     DIR *dirp;
     struct dirent *entry;
 
-    dirp = opendir("../Images/"); /* There should be error handling after this */
+    dirp = opendir(images_path); /* There should be error handling after this */
     while ((entry = readdir(dirp)) != NULL) {
         if (entry->d_type == DT_REG) { /* If the entry is a regular file */
             file_count++;
@@ -187,7 +193,7 @@ int calcule_num_files() {
 
 void execute_filter(char *filename) {
     char cmd[200];
-    strcpy(cmd, "python3 ../image_admin/sobel.py ");
+    strcpy(cmd, "python3 ./image_admin/sobel.py ");
     int x = system(strcat(cmd, filename));
 
 }

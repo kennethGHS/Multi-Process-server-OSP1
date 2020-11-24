@@ -15,7 +15,7 @@
 #include <sys/mman.h>
 #include <dirent.h>
 
-void configureImageReceiver();
+void configureImageReceiver(char *path);
 
 int receive_picture(int socket);
 

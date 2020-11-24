@@ -1,10 +1,11 @@
 //
-// Created by kenneth on 19/11/20.
+// Created by kenneth on 20/11/20.
 //
-#include "delegation_mode.h"
 
-void execute_delegation(int processes) {
-    initList(processes);
+#include "heavy_process.h"
+
+void execute_heavy_process() {
+
     int server_fd, new_socket, valread;
     struct sockaddr_in address;
     int opt = 1;
@@ -35,7 +36,6 @@ void execute_delegation(int processes) {
         perror("listen");
         exit(EXIT_FAILURE);
     }
-    create_processes(processes);
     while (1) {
         printf("Esperando \n");
         if ((new_socket = accept(server_fd, (struct sockaddr *) &address,
@@ -44,26 +44,25 @@ void execute_delegation(int processes) {
             exit(EXIT_FAILURE);
         }
         printf("Detected connection\n");
-        while (release_and_set_available(new_socket) == -1) {
-
+        int id = fork();
+        if (id == 0) {
+            receive_picture(new_socket);
+            close(new_socket);
+            exit(0);
         }
-        send_file(new_socket);
     }
-
 }
 
-void create_processes(int processes) {
-    for (int i = 0; i < processes; ++i) {
-        int id = fork();
-        if (id != 0) {
-            if (id == -1) {
-                printf("Error a la hora de creacion");
-            }
-            continue;
-        }
+int main(int argc, char const *argv[]) {
 
-        printf("Creating process %d\n", i);
-        create_and_execute(getpid());
-        return;
+    if (argc != 2) {
+        printf("Not enough arguments. Usage is: sequential <port>\n");
+        return 1;
     }
+    PORT = atoi(argv[1]);
+
+    configureImageReceiver("./h_process_images/"); // ESTO SIEMPRE SE EJECUTA
+    configure_comunication(); // ESTO SIEMPRE SE EJECUTA
+    execute_heavy_process();
+
 }

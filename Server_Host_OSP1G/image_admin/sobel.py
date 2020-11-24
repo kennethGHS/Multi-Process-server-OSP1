@@ -11,7 +11,6 @@ def main():
     if not os.path.isfile(args.path) or img is None:
         print('Image not found')
         return
-    print('Filtering ' + args.path)
     filtered = cv2.Sobel(img, cv2.CV_8U, 1, 0, ksize=5)
     cv2.imwrite(args.path, filtered)
 

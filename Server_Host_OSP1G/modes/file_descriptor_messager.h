@@ -13,8 +13,6 @@
 #include <fcntl.h>
 #include <time.h>
 
-#define PORT 8080
-
 int sv[2];
 
 static void wyslij(int socket, int fd);
