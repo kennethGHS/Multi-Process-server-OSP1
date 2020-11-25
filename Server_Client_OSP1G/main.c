@@ -102,20 +102,22 @@ int main(int argc, char const *argv[]) {
 
     const int requests = num_images * num_threads;
     double request_time[requests];
+    double cumulative_time[requests];
     int request_counter = 0;
 
     omp_set_num_threads(num_threads);
 #pragma omp parallel
     {
+        double start_time = omp_get_wtime();
         for(int i = 0; i < num_images; i++) {
             printf("Thread: %d Cycle: %d\n", omp_get_thread_num(), i);
-            double init_Time = omp_get_wtime();
+            double init_time = omp_get_wtime();
             execute_server_client(ip_address, port, filename);
 #pragma omp critical
             {
-                request_time[request_counter] = (omp_get_wtime() - init_Time);
+                request_time[request_counter] = (omp_get_wtime() - init_time);
+                cumulative_time[request_counter] = (omp_get_wtime() - start_time);
                 request_counter++;
-                printf("%d\n", request_counter);
             }
         }
     }
@@ -123,7 +125,7 @@ int main(int argc, char const *argv[]) {
     // Write metrics to file
     FILE *fp = fopen(output, "w");
     for(int i = 0; i < requests; i++) {
-        fprintf(fp, "%.4f\n", request_time[i]);
+        fprintf(fp, "%.4f %.4f\n", request_time[i], cumulative_time[i]);
     }
     fclose(fp);
 }
