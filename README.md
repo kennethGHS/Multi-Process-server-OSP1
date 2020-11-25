@@ -15,3 +15,9 @@ After compiling just execute it like:
 ```console
 <compiled target> <listening port>
 ```
+
+Finally, to execute the visualizer cd into the folder and execute the following command:
+
+```console
+python3 main.py <sequential file> <heavy_process file> <pre_heavy_process file>
+```
