@@ -16,7 +16,7 @@ pre_heavy_process: all
 
 all:
 	$(MAKE) clean
-	$(CC) $($(TARGET)_SRC) $(CFLAGS) -o $(TARGET).o
+	$(CC) $($(TARGET)_SRC) $(CFLAGS) -o $(TARGET)
 
 clean:
 	find . -name "*.h.gch" -type f -delete
