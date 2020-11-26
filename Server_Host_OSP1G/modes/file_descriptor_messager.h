@@ -15,9 +15,9 @@
 
 int sv[2];
 
-static void wyslij(int socket, int fd);
+static void send_from_father(int socket, int fd);
 
-static int odbierz(int socket);
+static int receive_from_father(int socket);
 
 void send_file(int fileDescriptor);
 

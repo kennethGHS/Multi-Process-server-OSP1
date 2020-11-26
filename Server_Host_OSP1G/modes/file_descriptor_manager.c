@@ -3,32 +3,53 @@
 //
 
 #include "file_descriptor_messager.h"
+/**
+ * All of this code was recovered from this stack overflow question:
+https://stackoverflow.com/questions/28003921/sending-file-descriptor-by-linux-socket/
+ *and adapted to what the project needed, some minor modifications like the closing of some sockets was deleted
+ *
+ */
 
+
+
+/**
+ * Sends the file descriptor to a child process
+ * @param fileDescriptor
+ */
 void send_file(int fileDescriptor) {
 
     int sock = sv[0];
     int fd = fileDescriptor;
-    wyslij(sock, fd);
+    send_from_father(sock, fd);
 
     close(fd);
     nanosleep(&(struct timespec) {.tv_sec = 0, .tv_nsec = 5000000}, 0);
 }
-
+/**
+ * Receives thje file descriptor from a parent
+ * @return
+ */
 int receive() {
 
     int sock = sv[1];
     nanosleep(&(struct timespec) {.tv_sec = 0, .tv_nsec = 5000000}, 0);
-    int fd = odbierz(sock);
+    int fd = receive_from_father(sock);
     return fd;
 }
-
+/**
+ * Configures the communication between processes
+ */
 void configure_comunication() {
     if (socketpair(AF_UNIX, SOCK_DGRAM, 0, sv) != 0)
         printf("Failed to create Unix-domain socket pair\n");
 }
-
+/**
+ * Sends a file descriptor to a child process
+ * @param socket socket to send the file to
+ * @param fd file descriptor
+ */
 static
-void wyslij(int socket, int fd)  // send fd by socket
+void send_from_father(int socket, int fd)  // send fd by socket
 {
     struct msghdr msg = {0};
     char buf[CMSG_SPACE(sizeof(fd))];
@@ -52,9 +73,13 @@ void wyslij(int socket, int fd)  // send fd by socket
     if (sendmsg(socket, &msg, 0) < 0)
         printf("Failed to send message\n");
 }
-
+/**
+ * Receives the file descriptor from its father
+ * @param socket socket to read the fd from
+ * @return
+ */
 static
-int odbierz(int socket)  // receive fd from socket
+int receive_from_father(int socket)  // receive fd from socket
 {
     struct msghdr msg = {0};
 
